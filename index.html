@@ -6,7 +6,6 @@
     <title>Quiz Score Calculator - The Coders Club</title>
     <link rel="icon" href="TCC.png" type="image/png">
     <link rel="stylesheet" href="styles.css">
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Custom styles for the Inter font and overall aesthetics for the entire page */
@@ -177,18 +176,17 @@
     </div>
 
     <div class="content-container-wrapper">
-        <!-- Quiz Score Calculator content now within its own .container div -->
         <div class="container">
             <h1 class="text-4xl font-extrabold">Quiz Score Calculator</h1>
 
-            <!-- Quiz Setup Section -->
             <div class="quiz-setup-section">
                 <h2 class="text-2xl font-semibold section-title">1. Quiz Setup</h2>
                 <div class="mb-4">
                     <label for="correctAnswers" class="block text-gray-700 text-sm font-bold mb-2">
                         Correct Answers (comma-separated, e.g., A, B, C):
                     </label>
-                    <textarea id="correctAnswers" rows="5" placeholder="Enter correct answers here, comma-separated. Example:&#x0A;A,B,C,D" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"></textarea>
+                    <textarea id="correctAnswers" rows="5" placeholder="Enter correct answers here, comma-separated. Example:
+A,B,C,D" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"></textarea>
                     <p id="correctAnswersError" class="error-message hidden">Please enter correct answers.</p>
                 </div>
                 <div class="mb-6">
@@ -200,30 +198,29 @@
                 </div>
             </div>
 
-            <!-- Participant Entry Section -->
             <div class="participant-entry-section">
                 <h2 class="text-2xl font-semibold section-title">2. Participant's Entry</h2>
                 <div class="mb-6">
                     <label for="participantAnswers" class="block text-gray-700 text-sm font-bold mb-2">
                         Participant's Answers (can be a continuous string or comma/newline separated):
                     </label>
-                    <textarea id="participantAnswers" rows="5" placeholder="Enter participant's answers here. Example:&#x0A;A. My AnswerC) Another AnswerD. Final Answer&#x0A;OR&#x0A;A,B,C,D" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"></textarea>
+                    <textarea id="participantAnswers" rows="5" placeholder="Enter participant's answers here. Example:
+A. My AnswerC) Another AnswerD. Final Answer
+OR
+A,B,C,D" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"></textarea>
                     <p id="participantAnswersError" class="error-message hidden">Please enter participant answers.</p>
                     <p id="answerCountMismatchError" class="error-message hidden">Number of participant answers does not match the number of correct answers.</p>
                 </div>
             </div>
 
-            <!-- Calculate Score Button -->
             <button id="calculateScoreBtn" class="px-6 py-3 text-lg">Calculate Score</button>
 
-            <!-- Extracted Participant Entries Display Section -->
             <div id="extractedAnswersDisplay" class="extracted-answers-display hidden">
                 <strong>Extracted Participant Entries:</strong>
                 <span id="extractedAnswersList"></span>
                 <div class="mt-2 text-sm text-gray-600">Total Extracted: <span id="extractedCount" class="font-bold">0</span></div>
             </div>
 
-            <!-- Score Display Section -->
             <div id="scoreDisplay" class="score-display hidden">
                 Your Score: <span id="finalScore" class="font-extrabold">0</span>
             </div>
@@ -286,46 +283,10 @@
         function extractQuizOptionLabels(text) {
             let allLabels = [];
 
-            // This regex specifically targets option labels (A, B, C, D)
-            // - It looks for a word boundary (\b) to ensure it's not part of another word.
-            // - It captures the letter (A-D) in group 1.
-            // - Then it looks for either:
-            //    - A literal dot or closing parenthesis ([.)])
-            //    - OR a word boundary (\b) indicating a standalone letter
-            //    - OR a space (\s) which could follow a standalone letter without a word boundary
-            //    - OR the end of the string ($)
-            // The `\b` at the end ensures we don't accidentally match part of words like "Apple" for "A"
-            // This version uses a positive lookahead to ensure something follows the letter, but doesn't consume it,
-            // allowing us to catch the standalone 'A' correctly.
-
-            // The original regex from the provided code: /\b([A-D])(?:\.|\)|\b(?=\s|$))/g;
-            // Let's ensure it handles cases like "A. Some text B. More text" and "A,B,C" consistently.
-            // For the purpose of getting *cleaned* labels (A, B, C, D only), we will simplify the match.
-            // We want to find A, B, C, or D that are either followed by punctuation/space, or are standalone.
-            // We'll use a simpler regex to find the letter, and then filter.
-
-            // Regex to find A, B, C, D that are likely options.
-            // This will capture "A", "B", "C", "D" whether they are followed by . ) or space, or are standalone.
-            const optionRegex = /[A-D](?=\.|\)|\s|$)/g; // Look for A-D followed by . ) space or end of string
-            let match;
-            while ((match = optionRegex.exec(text)) !== null) {
-                allLabels.push(match[0]); // match[0] is the entire matched string, which is just the letter here
-            }
-
-            // Additionally, handle cases where options are simply comma-separated or newline-separated
-            // without any trailing punctuation, e.g., "A,B,C" or "A\nB\nC"
-            const simpleSplitLabels = text.split(/[\s,;]+/)
-                                          .map(s => s.trim().toUpperCase())
-                                          .filter(s => s.match(/^[A-D]$/)); // Filter for single letters A-D
-
-            // Combine and deduplicate if necessary, but for quiz answers, duplicates are important.
-            // We need to ensure the order is maintained and all valid options are captured.
-            // Let's refine the primary regex to capture all instances of A,B,C,D.
-
             // A more robust regex that captures the letter and then consumes the punctuation/space
             // or handles standalone letters. This ensures we get all options in order.
             const comprehensiveOptionRegex = /\b([A-D])(?:[\.\)\s]|$)/g;
-            allLabels = []; // Reset allLabels to use the new comprehensive regex
+            let match;
             while ((match = comprehensiveOptionRegex.exec(text)) !== null) {
                 allLabels.push(match[1]); // match[1] is the captured letter (A, B, C, D)
             }
@@ -405,8 +366,6 @@
 
         // Add event listener to the calculate button
         calculateScoreBtn.addEventListener('click', calculateScore);
-        };
-
     </script>
 </body>
 </html>
