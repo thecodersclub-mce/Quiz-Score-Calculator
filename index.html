@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Score Calculator - The Coders Club</title>
+    <link rel="icon" href="TCC.png" type="image/png">
+    <link rel="stylesheet" href="styles.css">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the Inter font and overall aesthetics for the entire page */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Light gray background */
+            display: flex;
+            flex-direction: column; /* Arrange header, content, footer vertically */
+            min-height: 100vh; /* Ensure body takes full viewport height */
+            padding: 0; /* Reset padding as content-container-wrapper will handle it */
+            margin: 0; /* Reset margin */
+            box-sizing: border-box;
+        }
+
+        /* Styles for the inner quiz calculator container */
+        .container {
+            background-color: #ffffff;
+            border-radius: 1rem; /* Rounded corners */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+            padding: 2.5rem; /* Internal padding for the quiz elements */
+            max-width: 800px; /* Max width for the quiz content itself */
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem; /* Space between sections inside the quiz container */
+        }
+
+        /* Styles for the main content wrapper (from styles.css, but ensuring it works with body flex) */
+        .content-container-wrapper {
+            /* This class will now primarily center its content (the .container) and provide top/bottom margins */
+            margin-top: 20px;
+            margin-right: auto;
+            margin-bottom: 70px;
+            margin-left: auto;
+            width: 90%; /* Inherited from styles.css */
+            max-width: 900px; /* Inherited from styles.css */
+            /* No background, border-radius, box-shadow, padding here as the inner .container will have them */
+            display: flex; /* To center the inner .container */
+            justify-content: center; /* Center the inner .container horizontally */
+            align-items: flex-start; /* Align inner container to top within wrapper */
+            flex-grow: 1; /* Allow content wrapper to grow and push footer down */
+        }
+
+        /* Specific styles for elements inside the quiz calculator, adjusted for consistency */
+        /* These selectors now target elements within the .container */
+        .container h1 { /* Targeting h1 inside .container */
+            color: #1a202c; /* Dark text for heading */
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .container .section-title { /* Targeting .section-title inside .container */
+            color: #2d3748; /* Slightly lighter dark for section titles */
+            border-bottom: 1px solid #e2e8f0; /* Light border */
+            padding-bottom: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .container textarea, .container input[type="number"] { /* Targeting inputs inside .container */
+            border: 1px solid #cbd5e0; /* Light border for inputs */
+            border-radius: 0.5rem; /* Rounded corners for inputs */
+            padding: 0.75rem 1rem;
+            width: 100%;
+            font-size: 1rem;
+            color: #4a5568;
+            outline: none;
+            transition: border-color 0.2s ease-in-out;
+        }
+        .container textarea:focus, .container input[type="number"]:focus {
+            border-color: #6366f1; /* Accent color on focus */
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); /* Focus ring */
+        }
+        .container button#calculateScoreBtn { /* Targeting button inside .container */
+            background-color: #00408f; /* Changed to blue container color */
+            color: #ffffff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem; /* More rounded button */
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            border: none;
+            outline: none;
+            align-self: center; /* Center the button */
+        }
+        .container button#calculateScoreBtn:hover {
+            background-color: #003377; /* Darker shade of blue for hover */
+            transform: translateY(-1px); /* Slight lift effect */
+        }
+        .container button#calculateScoreBtn:active {
+            transform: translateY(0); /* Press down effect */
+        }
+        .container .score-display, .container .extracted-answers-display { /* Targeting displays inside .container */
+            background-color: #eff6ff; /* Light blue background for score */
+            border: 1px dashed #93c5fd; /* Dashed blue border */
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: center;
+            font-size: 1.1rem;
+            color: #1e40af; /* Dark blue text */
+            margin-top: 1.5rem;
+        }
+        .container .extracted-answers-display strong {
+            font-size: 1.2rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        .container .extracted-answers-display span {
+            font-weight: 600;
+            color: #2563eb;
+        }
+        .container .score-display {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .container .error-message {
+            color: #ef4444; /* Red for error messages */
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Responsive adjustments for quiz calculator within wrapper */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem; /* Adjust internal padding for quiz elements */
+            }
+            .container h1 {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 1rem; /* Adjust internal padding for quiz elements */
+            }
+            .container h1 {
+                font-size: 2rem;
+            }
+            .container textarea, .container input[type="number"], .container button#calculateScoreBtn {
+                font-size: 0.9rem;
+                padding: 0.6rem 1rem;
+            }
+            .container .score-display, .container .extracted-answers-display {
+                font-size: 1rem;
+                padding: 1rem;
+            }
+        }
+
+        /* Additional responsive adjustments for the overall content-container-wrapper */
+        @media (max-width: 600px) {
+            .content-container-wrapper {
+                padding-left: 15px; /* Add horizontal padding to the wrapper itself */
+                padding-right: 15px;
+                width: auto; /* Allow width to be determined by padding and content */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="blue-container">
+        <div class="left-aligned">
+            <a href="https://mce-madurai.ac.in/" target="_blank">
+                <img src="MCE_tab.png" alt="Logo" class="favicon-logo">
+            </a>
+            <div class="titles">
+                <h1 class="college-name">Mangayarkarasi College of Engineering</h1>
+                <h2 class="site-title">The Coders Club</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-container-wrapper">
+        <!-- Quiz Score Calculator content now within its own .container div -->
+        <div class="container">
+            <h1 class="text-4xl font-extrabold">Quiz Score Calculator</h1>
+
+            <!-- Quiz Setup Section -->
+            <div class="quiz-setup-section">
+                <h2 class="text-2xl font-semibold section-title">1. Quiz Setup</h2>
+                <div class="mb-4">
+                    <label for="correctAnswers" class="block text-gray-700 text-sm font-bold mb-2">
+                        Correct Answers (comma-separated, e.g., A, B, C):
+                    </label>
+                    <textarea id="correctAnswers" rows="5" placeholder="Enter correct answers here, comma-separated. Example:&#x0A;A,B,C,D" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"></textarea>
+                    <p id="correctAnswersError" class="error-message hidden">Please enter correct answers.</p>
+                </div>
+                <div class="mb-6">
+                    <label for="pointsPerQuestion" class="block text-gray-700 text-sm font-bold mb-2">
+                        Points per Question:
+                    </label>
+                    <input type="number" id="pointsPerQuestion" value="10" min="1" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                    <p id="pointsPerQuestionError" class="error-message hidden">Points per question must be a positive number.</p>
+                </div>
+            </div>
+
+            <!-- Participant Entry Section -->
+            <div class="participant-entry-section">
+                <h2 class="text-2xl font-semibold section-title">2. Participant's Entry</h2>
+                <div class="mb-6">
+                    <label for="participantAnswers" class="block text-gray-700 text-sm font-bold mb-2">
+                        Participant's Answers (can be a continuous string or comma/newline separated):
+                    </label>
+                    <textarea id="participantAnswers" rows="5" placeholder="Enter participant's answers here. Example:&#x0A;A. My AnswerC) Another AnswerD. Final Answer&#x0A;OR&#x0A;A,B,C,D" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"></textarea>
+                    <p id="participantAnswersError" class="error-message hidden">Please enter participant answers.</p>
+                    <p id="answerCountMismatchError" class="error-message hidden">Number of participant answers does not match the number of correct answers.</p>
+                </div>
+            </div>
+
+            <!-- Calculate Score Button -->
+            <button id="calculateScoreBtn" class="px-6 py-3 text-lg">Calculate Score</button>
+
+            <!-- Extracted Participant Entries Display Section -->
+            <div id="extractedAnswersDisplay" class="extracted-answers-display hidden">
+                <strong>Extracted Participant Entries:</strong>
+                <span id="extractedAnswersList"></span>
+                <div class="mt-2 text-sm text-gray-600">Total Extracted: <span id="extractedCount" class="font-bold">0</span></div>
+            </div>
+
+            <!-- Score Display Section -->
+            <div id="scoreDisplay" class="score-display hidden">
+                Your Score: <span id="finalScore" class="font-extrabold">0</span>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Created by The Coders Club</p>
+        <a href="https://www.instagram.com/the_mce.coders_club?igsh=Z245eDZmdWhkcmRn" target="_blank">
+            <img src="IG.png" alt="Instagram" class="social-logo">
+        </a>
+        <a href="https://www.linkedin.com/in/thecodersclub-mce/" target="_blank">
+            <img src="LINKEDLN.png" alt="LinkedIn" class="social-logo">
+        </a>
+        <a href="https://www.youtube.com/@TheCodersClub_MCE" target="_blank">
+            <img src="YT.png" alt="YouTube" class="social-logo">
+        </a>
+        <a href="https://whatsapp.com/channel/0029Vb6HMGKKAwEe8OdjAF0X" target="_blank">
+            <img src="WP.svg" alt="WhatsApp" class="social-logo">
+        </a>
+    </footer>
+
+    <script>
+        // Get references to DOM elements
+        const correctAnswersInput = document.getElementById('correctAnswers');
+        const pointsPerQuestionInput = document.getElementById('pointsPerQuestion');
+        const participantAnswersInput = document.getElementById('participantAnswers');
+        const calculateScoreBtn = document.getElementById('calculateScoreBtn');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const finalScoreSpan = document.getElementById('finalScore');
+        const extractedAnswersDisplay = document.getElementById('extractedAnswersDisplay');
+        const extractedAnswersListSpan = document.getElementById('extractedAnswersList');
+        const extractedCountSpan = document.getElementById('extractedCount'); // New span for count
+
+        // Error message elements
+        const correctAnswersError = document.getElementById('correctAnswersError');
+        const pointsPerQuestionError = document.getElementById('pointsPerQuestionError');
+        const participantAnswersError = document.getElementById('participantAnswersError');
+        const answerCountMismatchError = document.getElementById('answerCountMismatchError');
+
+        /**
+         * Hides all error messages and result displays.
+         */
+        function hideAllDisplaysAndErrors() {
+            correctAnswersError.classList.add('hidden');
+            pointsPerQuestionError.classList.add('hidden');
+            participantAnswersError.classList.add('hidden');
+            answerCountMismatchError.classList.add('hidden');
+            scoreDisplay.classList.add('hidden');
+            extractedAnswersDisplay.classList.add('hidden');
+        }
+
+        /**
+         * Extracts quiz option labels (A, B, C, D) from a given text,
+         * handling formats like "A.", "B)", or standalone "C".
+         * This function is based on the logic from the provided "Quiz Option Extractor" code.
+         * @param {string} text The input text containing quiz answers.
+         * @returns {string[]} An array of extracted single-letter labels (e.g., ['A', 'B', 'C']).
+         */
+        function extractQuizOptionLabels(text) {
+            let allLabels = [];
+
+            // This regex specifically targets option labels (A, B, C, D)
+            // - It looks for a word boundary (\b) to ensure it's not part of another word.
+            // - It captures the letter (A-D) in group 1.
+            // - Then it looks for either:
+            //    - A literal dot or closing parenthesis ([.)])
+            //    - OR a word boundary (\b) indicating a standalone letter
+            //    - OR a space (\s) which could follow a standalone letter without a word boundary
+            //    - OR the end of the string ($)
+            // The `\b` at the end ensures we don't accidentally match part of words like "Apple" for "A"
+            // This version uses a positive lookahead to ensure something follows the letter, but doesn't consume it,
+            // allowing us to catch the standalone 'A' correctly.
+
+            // The original regex from the provided code: /\b([A-D])(?:\.|\)|\b(?=\s|$))/g;
+            // Let's ensure it handles cases like "A. Some text B. More text" and "A,B,C" consistently.
+            // For the purpose of getting *cleaned* labels (A, B, C, D only), we will simplify the match.
+            // We want to find A, B, C, or D that are either followed by punctuation/space, or are standalone.
+            // We'll use a simpler regex to find the letter, and then filter.
+
+            // Regex to find A, B, C, D that are likely options.
+            // This will capture "A", "B", "C", "D" whether they are followed by . ) or space, or are standalone.
+            const optionRegex = /[A-D](?=\.|\)|\s|$)/g; // Look for A-D followed by . ) space or end of string
+            let match;
+            while ((match = optionRegex.exec(text)) !== null) {
+                allLabels.push(match[0]); // match[0] is the entire matched string, which is just the letter here
+            }
+
+            // Additionally, handle cases where options are simply comma-separated or newline-separated
+            // without any trailing punctuation, e.g., "A,B,C" or "A\nB\nC"
+            const simpleSplitLabels = text.split(/[\s,;]+/)
+                                          .map(s => s.trim().toUpperCase())
+                                          .filter(s => s.match(/^[A-D]$/)); // Filter for single letters A-D
+
+            // Combine and deduplicate if necessary, but for quiz answers, duplicates are important.
+            // We need to ensure the order is maintained and all valid options are captured.
+            // Let's refine the primary regex to capture all instances of A,B,C,D.
+
+            // A more robust regex that captures the letter and then consumes the punctuation/space
+            // or handles standalone letters. This ensures we get all options in order.
+            const comprehensiveOptionRegex = /\b([A-D])(?:[\.\)\s]|$)/g;
+            allLabels = []; // Reset allLabels to use the new comprehensive regex
+            while ((match = comprehensiveOptionRegex.exec(text)) !== null) {
+                allLabels.push(match[1]); // match[1] is the captured letter (A, B, C, D)
+            }
+
+            return allLabels.map(label => label.toUpperCase()); // Ensure all are uppercase
+        }
+
+
+        /**
+         * Calculates the quiz score based on provided correct answers, participant answers, and points per question.
+         */
+        function calculateScore() {
+            hideAllDisplaysAndErrors(); // Clear previous errors and results
+
+            const correctAnswersText = correctAnswersInput.value.trim();
+            const pointsPerQuestion = parseFloat(pointsPerQuestionInput.value);
+            const participantAnswersRawText = participantAnswersInput.value.trim();
+
+            // Input validation
+            let isValid = true;
+
+            if (!correctAnswersText) {
+                correctAnswersError.classList.remove('hidden');
+                isValid = false;
+            }
+
+            if (isNaN(pointsPerQuestion) || pointsPerQuestion <= 0) {
+                pointsPerQuestionError.classList.remove('hidden');
+                isValid = false;
+            }
+
+            if (!participantAnswersRawText) {
+                participantAnswersError.classList.remove('hidden');
+                isValid = false;
+            }
+
+            if (!isValid) {
+                return;
+            }
+
+            // Parse correct answers (comma-separated)
+            const correctAnswers = correctAnswersText
+                .split(/[\n,]+/) // Split by new line or comma
+                .map(ans => ans.trim().toUpperCase())
+                .filter(ans => ans.match(/^[A-D]$/)); // Ensure correct answers are single letters A-D
+
+            // Use the integrated extraction logic for participant answers
+            const cleanedParticipantAnswers = extractQuizOptionLabels(participantAnswersRawText);
+
+            // Display extracted participant answers (cleaned) and their count
+            if (cleanedParticipantAnswers.length > 0) {
+                extractedAnswersListSpan.textContent = cleanedParticipantAnswers.join(', ');
+                extractedCountSpan.textContent = cleanedParticipantAnswers.length;
+                extractedAnswersDisplay.classList.remove('hidden');
+            } else {
+                extractedAnswersDisplay.classList.add('hidden');
+            }
+
+            // Check if the number of answers matches
+            if (correctAnswers.length === 0 || correctAnswers.length !== cleanedParticipantAnswers.length) {
+                answerCountMismatchError.classList.remove('hidden');
+                return;
+            }
+
+            let totalScore = 0;
+            // Iterate through answers and calculate score using the cleaned options
+            for (let i = 0; i < correctAnswers.length; i++) {
+                if (cleanedParticipantAnswers[i] === correctAnswers[i]) {
+                    totalScore += pointsPerQuestion;
+                }
+            }
+
+            // Display the calculated score
+            finalScoreSpan.textContent = totalScore;
+            scoreDisplay.classList.remove('hidden'); // Show the score display
+        }
+
+        // Add event listener to the calculate button
+        calculateScoreBtn.addEventListener('click', calculateScore);
+
+        // Set default values on window load for easy testing
+        window.onload = () => {
+            correctAnswersInput.value = "A,B,D,C";
+            // Default to the simple comma-separated input for participant answers
+            participantAnswersInput.value = "Enter data";
+            pointsPerQuestionInput.value = "10";
+        };
+
+    </script>
+</body>
+</html>
